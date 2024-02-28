@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Cumulonimbus")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71cff0bb6bb71532f430eb45eaa727cf368e4859")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+025fe8175779f53487a15ebbc3fdf7c6d6753707")]
 [assembly: System.Reflection.AssemblyProductAttribute("Cumulonimbus")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Cumulonimbus")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
