@@ -1,2 +1,2 @@
 # Cumulo
-A simple patcher that uses Mono.Cecil to patch the Resonite Headless for use in .NET 8
+A simple patcher that uses Mono.Cecil to weave the Resonite Headless to support .NET 8
