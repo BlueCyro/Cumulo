@@ -1,0 +1,78 @@
+{
+  "format": 1,
+  "restore": {
+    "/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/Cumulonimbus.csproj": {}
+  },
+  "projects": {
+    "/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/Cumulonimbus.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/Cumulonimbus.csproj",
+        "projectName": "Cumulonimbus",
+        "projectPath": "/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/Cumulonimbus.csproj",
+        "packagesPath": "/home/cyro/.nuget/packages/",
+        "outputPath": "/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/cyro/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net472"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net472": {
+            "targetAlias": "net472",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net472": {
+          "targetAlias": "net472",
+          "dependencies": {
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.3, )",
+              "autoReferenced": true
+            },
+            "Mono.Cecil": {
+              "target": "Package",
+              "version": "[0.11.5, )"
+            },
+            "System.CommandLine": {
+              "target": "Package",
+              "version": "[2.0.0-beta4.22272.1, )"
+            },
+            "System.Memory": {
+              "target": "Package",
+              "version": "[4.5.5, )"
+            },
+            "System.Security.Permissions": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "System.ValueTuple": {
+              "target": "Package",
+              "version": "[4.5.0, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.101/RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
+        }
+      }
+    }
+  }
+}

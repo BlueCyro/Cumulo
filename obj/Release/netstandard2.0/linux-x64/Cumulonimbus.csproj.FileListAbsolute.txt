@@ -1,0 +1,5 @@
+/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/obj/Release/netstandard2.0/linux-x64/Cumulonimbus.csproj.AssemblyReference.cache
+/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/obj/Release/netstandard2.0/linux-x64/Cumulonimbus.GeneratedMSBuildEditorConfig.editorconfig
+/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/obj/Release/netstandard2.0/linux-x64/Cumulonimbus.AssemblyInfoInputs.cache
+/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/obj/Release/netstandard2.0/linux-x64/Cumulonimbus.AssemblyInfo.cs
+/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Cumulonimbus-Testing/obj/Release/netstandard2.0/linux-x64/Cumulonimbus.csproj.CoreCompileInputs.cache
