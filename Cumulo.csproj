@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <SelfContained>true</SelfContained>
-    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <DocumentationFile>./Docs.xml</DocumentationFile>
     <Version>1.0.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
