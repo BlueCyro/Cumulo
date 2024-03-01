@@ -99,6 +99,11 @@
   </Target>
 
 
+  <Target Name="ZipRelease" AfterTargets="Publish">
+    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="./Cumulo_Patcher.zip" Overwrite="true" />
+  </Target>
+
+
   <Target Name="DeepClean">
     <RemoveDir Directories="./bin" />
     <RemoveDir Directories="./obj" />
