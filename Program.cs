@@ -5,14 +5,16 @@ using System.CommandLine;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using ParameterAttributes = Mono.Cecil.ParameterAttributes;
 
+
 namespace Cumulonimbus;
 
 #pragma warning disable CS1591
 
 public class Program
 {
-    public static readonly string[] targetModules = ["FrooxEngine.dll", "FrooxEngine.Weaver.dll"];
-    public static readonly ReaderParameters readParams = new();
+    public const string EXTRA_LIBS = "./extralibs";
+    public const string SPECIAL_LIBS = "./specials";
+    public static readonly string[] targetModules = ["FrooxEngine.dll", "FrooxEngine.Weaver.dll", "Elements.Core.dll"];
 
 #pragma warning restore CS1591
 
@@ -23,12 +25,15 @@ public class Program
     /// <returns></returns>
     public static async Task<int> Main(string[] args)
     {
+        // Define root command
         RootCommand root = new("Patches the Resonite headless to be compatible with the .NET 8 Runtime");
 
+        // Add a string path that'll be used as the headless path
         Argument<string> path = new(
             "path",
             "The path of the Resonite Headless directory");
         
+        // Add a bool option to allow running without user input
         Option<bool> noConfirm = new(
             "--noconfirm",
             () => false,
@@ -36,6 +41,8 @@ public class Program
 
         root.AddArgument(path);
         root.AddOption(noConfirm);
+
+        // Define a handler for running the command line input
         root.SetHandler((path, noConfirm) => {            
             if (!Directory.Exists(path))
             {
@@ -61,6 +68,14 @@ public class Program
     {   
         Msg("Starting Cumulo patcher!");
 
+        // If the extra libraries somehow don't exist, blow up
+        if (!Directory.Exists(EXTRA_LIBS) || !File.Exists(Path.Combine(SPECIAL_LIBS, "0Harmony.dll")))
+        {
+            Error("Cannot find extra libraries! Exiting!");
+            return;
+        }
+
+        // Make super duper sure that the user wants to irreversibly modify their headless
         if (!noConfirm)
         {
             string prompt = string.Join(Environment.NewLine,
@@ -80,6 +95,7 @@ public class Program
 
             Console.WriteLine();
 
+            // Only pass if the user types "y" or "yes", anything else aborts
             if (confirmation?.ToLower(System.Globalization.CultureInfo.CurrentCulture) is null or not "y" or "yes")
             {
                 Msg("Aborting. Have a nice day!");
@@ -90,44 +106,75 @@ public class Program
                 Msg("Proceeding with Cumulo patches");
             }
         }
-
-
-        DefaultAssemblyResolver resolver = new();
-        readParams.AssemblyResolver = resolver;
-        resolver.AddSearchDirectory(path); // Add the desired directory to the assembly resolution path
     
 
-        // Read all of the targetModules from the headless directory and return their definitions
-        IEnumerable<ModuleDefinition> getModules()
-        {
-            foreach (string moduleName in targetModules)
-            {
-                FileStream stream = File.Open(Path.Combine(path, moduleName), FileMode.Open, FileAccess.ReadWrite);
-                yield return ModuleDefinition.ReadModule(stream, readParams);
-            }
-        }
+        // Read all of the targetModules from the headless directory and apply patches
+        IEnumerable<FileStream> files =
+            targetModules.Select(m => 
+                File.Open(Path.Combine(path, m), FileMode.Open, FileAccess.ReadWrite));
         
 
-        // Search the modules for any methods that need to be patched and execute the patches
-        PatchHelpers.PatchAll([.. getModules()]);
+        // Make a new resolver, the  Nimbus resolver notably doesn't cache resolved assemblies
+        NimbusAssemblyResolver resolver = new();
+        ReaderParameters readParams = new()
+        {
+            ReadWrite = true,
+            AssemblyResolver = resolver
+        };
+
+
+        // Also search in the headless path for assemblie references to resolve
+        resolver.AddSearchDirectory(path);
+
+
+        // Go over each module and patch it in sequence
+        foreach (FileStream module in files)
+        {
+            try
+            {
+                using AssemblyDefinition asm = AssemblyDefinition.ReadAssembly(module, readParams);
+                PatchHelpers.PatchAll(asm.MainModule);
+
+
+                Msg($"Writing assembly to: {module.Name}");
+                asm.Write(module);
+            }
+            catch (IOException ex) // Catch any potential violations. I caught a lot of these so I'm leaving this here to be sure :(
+            {
+                Msg($"Caught sharing violation! Message: {ex.Message}");
+                return;
+            }
+            finally
+            {
+                module.Dispose();
+            }
+        }
 
 
         // Copy some extra libraries to the headless in order to satisfy it's new .NET 8 dependencies
-        foreach (var (source, dest) in GetFiles(path))
-        {
-            Msg($"Copying {source} to {dest}");
-            try
-            {
-                if (!Directory.Exists(dest))
-                    Directory.CreateDirectory(dest);
-                
-                File.Copy(source, dest, true);
-            }
-            catch (Exception e)
-            {
-                Error($"Failed copying {source}, skipping. Exception: {e}");
-            }
-        }
+        Msg("Merging extralibs into Headless folder");
+        PatchHelpers.CopyDirectory("./extralibs", path, true, true);
+
+
+        // Specifically try to find 0Harmony so we can replace the old one
+        string OldHarmony = Directory.EnumerateFiles(path, "0Harmony.dll", SearchOption.AllDirectories).FirstOrDefault();
+
+
+        // If no existing 0Harmony was found, just drop it in Libraries
+        string HarmonyPath =
+            OldHarmony != null
+            ? Path.GetDirectoryName(OldHarmony)
+            : Path.Combine(path, "Libraries/");
+        
+
+        // Create the directory (only for Libraries/) if it doesn't exist
+        if (!Directory.Exists(HarmonyPath))
+            Directory.CreateDirectory(HarmonyPath);
+        
+
+        // Copy 0Harmony.dll to the destination
+        File.Copy(Path.Combine(SPECIAL_LIBS, "0Harmony.dll"), HarmonyPath, true);
+
 
         // Success! :D (Mono.Cecil has stripped away a part of me that I'll never get back, but in return, I now wield eldritch power... Was it worth it...?)
         Msg("Success!");
@@ -137,20 +184,6 @@ public class Program
         
         Msg("Press any key to continue");
         Console.ReadKey();
-    }
-
-
-    /// <summary>
-    /// Gets all of the extra libraries that need to be copied into the destination.
-    /// </summary>
-    /// <param name="dest"></param>
-    /// <returns></returns>
-    public static IEnumerable<(string source, string dest)> GetFiles(string dest)
-    {
-        yield return ("extralibs/0Harmony.dll", Path.Combine(dest, "Libraries"));
-        yield return ("extralibs/System.Security.Permissions.dll", dest);
-        yield return ("extralibs/Nimbus.dll", Path.Combine(dest, "rml_mods"));
-        yield return ("extralibs/Resonite.runtimeconfig.json", dest);
     }
 
 
@@ -183,6 +216,20 @@ public class Program
     public static void Error(string message)
     {
         Console.WriteLine($"[ERROR] {message}");
+    }
+
+
+
+    /// <summary>
+    /// Prints a message when the project is in debug mode.
+    /// </summary>
+    /// <param name="message"></param>
+    public static void Debug(string message)
+    {
+#if DEBUG
+        Console.WriteLine($"[DEBUG] {message}");
+#endif
+        return;
     }
 
 
@@ -297,5 +344,29 @@ public class Program
         
         
         return instructions;
+    }
+
+
+
+    /// <summary>
+    /// Patches the 'Abort' method on the threadworker to call Thread.Interrupt instead, as Thread.Abort is deprecated
+    /// </summary>
+    /// <param name="instructions"></param>
+    /// <returns></returns>
+    [MethodPatch("Elements.Core.WorkProcessor+ThreadWorker", "Abort")]
+    public static IEnumerable<Instruction> Abort_Patch(IEnumerable<Instruction> instructions)
+    {
+        foreach (var inst in instructions)
+        {
+            if (inst.OpCode == OpCodes.Call)
+            {
+                Msg($"{inst.Operand}");
+                yield return inst;
+            }
+            else
+            {
+                yield return inst;
+            }
+        }
     }
 }
