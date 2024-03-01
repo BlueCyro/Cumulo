@@ -50,7 +50,7 @@ to
 <br/><br/>
 <br/><br/>
 
-<div style="text-align: right">
+<p align="right">
     <sub>
         Small shoutout to <a href="https://github.com/Nihlus/Crystite">Crystite</a> for inspiring implementations for some of the trickier hoops I had to jump through.
     </sub>
