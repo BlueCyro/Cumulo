@@ -48,7 +48,6 @@ to
 - `dotnet Resonite.exe`
 
 <br/><br/>
-<br/><br/>
 
 <p align="right">
     <sub>
