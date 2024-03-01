@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>Cumulonimbus</name>
+        <name>Cumulo</name>
     </assembly>
     <members>
         <member name="T:Cumulonimbus.PatchHelpers">
@@ -14,12 +14,12 @@
             Assembly marker to avoid multiple weavings of the same assembly
             </summary>
         </member>
-        <member name="M:Cumulonimbus.PatchHelpers.PatchAll(Mono.Cecil.ModuleDefinition[])">
+        <member name="M:Cumulonimbus.PatchHelpers.PatchAll(Mono.Cecil.ModuleDefinition)">
             <summary>
             Finds all methods annotated with <see cref="T:Cumulonimbus.MethodPatchAttribute"/> and
-            executes them on the methods they're targetting in the given modules.
+            executes them on the methods they're targetting in the given module.
             </summary>
-            <param name="modules"></param>
+            <param name="module">The module to patch</param>
         </member>
         <member name="M:Cumulonimbus.PatchHelpers.PatchMethod(Mono.Cecil.MethodDefinition,System.Reflection.MethodInfo)">
             <summary>
@@ -33,6 +33,32 @@
             Returns the MethodInfo of any given delegate or function reference
             </summary>
             <param name="d"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Cumulonimbus.PatchHelpers.CopyDirectory(System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Copied from https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+            <para>&#x0a;</para>
+            Why.
+            </summary>
+            <param name="sourceDir">The source directory to copy from</param>
+            <param name="destinationDir">The destination to copy the directory to</param>
+            <param name="recursive">Makes the copy recursive</param>
+            <param name="overWrite">Overwrites existing files</param>
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+        </member>
+        <member name="M:Cumulonimbus.PatchHelpers.GetAllNestedTypes(Mono.Cecil.ModuleDefinition)">
+            <summary>
+            Searches a module for all nested types recursively
+            </summary>
+            <param name="module">The module to query</param>
+            <returns></returns>
+        </member>
+        <member name="M:Cumulonimbus.PatchHelpers.GetNestedTypeDefinitions(Mono.Cecil.TypeDefinition)">
+            <summary>
+            Gets all nested definitions from a type definition recursively
+            </summary>
+            <param name="typeDef">The type to query</param>
             <returns></returns>
         </member>
         <member name="T:Cumulonimbus.MethodPatchAttribute">
@@ -51,6 +77,11 @@
             <param name="methodName">The method to apply the patch to</param>
             <param name="methodSignature">Optional method signature types</param>
         </member>
+        <member name="T:Cumulonimbus.NimbusAssemblyResolver">
+            <summary>
+            Dummy resolver to bypass the cache on the default one to not encounter file sharing violations
+            </summary>
+        </member>
         <member name="M:Cumulonimbus.Program.Main(System.String[])">
             <summary>
             Main entry point, uses System.CommandLine for CLI
@@ -64,13 +95,6 @@
             </summary>
             <param name="path">The path of the Resonite Headless folder</param>
             <param name="noConfirm">Whether to run without user input</param>
-        </member>
-        <member name="M:Cumulonimbus.Program.GetFiles(System.String)">
-            <summary>
-            Gets all of the extra libraries that need to be copied into the destination.
-            </summary>
-            <param name="dest"></param>
-            <returns></returns>
         </member>
         <member name="M:Cumulonimbus.Program.Msg(System.String)">
             <summary>
@@ -90,6 +114,12 @@
             </summary>
             <param name="message"></param>
         </member>
+        <member name="M:Cumulonimbus.Program.Debug(System.String)">
+            <summary>
+            Prints a message when the project is in debug mode.
+            </summary>
+            <param name="message"></param>
+        </member>
         <member name="M:Cumulonimbus.Program.Initialize_Patch(System.Collections.Generic.IEnumerable{Mono.Cecil.Cil.Instruction},Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.ILProcessor)">
             <summary>
             Patches the "Initialize" method in "FrooxEngine.LibraryInitializer" to remove the Ssl3 protocol as it's unsupported.
@@ -102,6 +132,15 @@
         <member name="M:Cumulonimbus.Program.Process_Patch(System.Collections.Generic.IEnumerable{Mono.Cecil.Cil.Instruction},Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.ILProcessor)">
             <summary>
             Patches the "Process" method in "FrooxEngine.Weaver.AssemblyPostProcessor" to 
+            </summary>
+            <param name="instructions"></param>
+            <param name="module"></param>
+            <param name="processor"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Cumulonimbus.Program.Abort_Patch(System.Collections.Generic.IEnumerable{Mono.Cecil.Cil.Instruction},Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.ILProcessor)">
+            <summary>
+            Patches the 'Abort' method on the threadworker to call Thread.Interrupt instead, as Thread.Abort is deprecated
             </summary>
             <param name="instructions"></param>
             <param name="module"></param>
