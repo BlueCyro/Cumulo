@@ -28,6 +28,7 @@ The changes made are:
 - Resonite.runtimeconfig.json is added to the root of the Headless folder to designate .NET 8 as the desired runtime.
 - Nimbus.dll is copied to the rml_mods folder to enable compatibility with normal Resonite clients.
 - 0Harmony.dll is copied to the Libraries folder as a replacement for the one provided by ResoniteModLoader
+- FrooxEngine.dll and FrooxEngine.Weavers.dll are patched in several key locations to enable .NET 8 compatibility
 
 You may also pass `--noconfirm` as an optional flag to run Cumulo without user confirmation. **Cumulo will not prompt you before making changes when using this flag**.
 
