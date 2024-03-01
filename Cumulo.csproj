@@ -1,0 +1,114 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <SelfContained>true</SelfContained>
+
+
+
+
+    <HarmonyRoot>../Harmony</HarmonyRoot>
+    <HarmonyPath>$(HarmonyRoot)/Harmony</HarmonyPath>
+    <NimbusPath>../Nimbus</NimbusPath>
+    <DocumentationFile>./Docs.xml</DocumentationFile>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="0.11.5" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
+  </ItemGroup>
+  
+
+  <Target Name="NimbusTarget" BeforeTargets="PreBuildEvent">
+    <Message Text="-------- Executing Cumulo pre-build steps --------&#x0a;&#x0a;&#x0a;" Importance="high" />
+    
+
+
+    <Message Text="-------- Building 0Harmony for .NET 8 --------&#x0a;" Importance="high" />
+    
+    <Exec Command="git clone https://github.com/pardeike/Harmony $(HarmonyRoot)" Condition="!Exists($(HarmonyRoot))" />
+
+    <XmlPoke
+        XmlInputPath="/run/media/cyro/E0EAC8C6EAC899E4/Users/Cyro/Documents/Coding Stuff/Resonite mods/Harmony/ILRepack.targets"
+        Query="/msb:Project/msb:Target/msb:ILRepack/@Internalize" 
+        Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003' /&gt;"
+        Value="false">
+        <!--Whoever made XML must be punished for these (&lt; = < &gt; = >) stupid escaped HTML tags-->
+    </XmlPoke>
+
+    <Exec Command="dotnet publish $(HarmonyPath)/Harmony.csproj -c ReleaseFat --framework net8.0" />
+    <Copy SourceFiles="$(HarmonyPath)/bin/ReleaseFat/net8.0/0Harmony.dll" DestinationFolder="./specials" />
+    
+    <Message Text="&#x0a;-------- 0Harmony build complete --------&#x0a;&#x0a;&#x0a;" Importance="high" />
+    
+    
+
+    <Message Text="-------- Building Nimbus --------&#x0a;" Importance="high" />
+    
+    <Exec Command="git clone https://github.com/RileyGuy/Nimbus $(NimbusPath)" Condition="!Exists($(NimbusPath))" />
+    <Exec Command="dotnet publish $(NimbusPath)/Nimbus.csproj -c Release" />
+    <Copy SourceFiles="$(NimbusPath)/bin/Release/net472/publish/Nimbus.dll" DestinationFolder="./extralibs/rml_mods" />
+  
+    <Message Text="&#x0a;-------- Nimbus build complete --------&#x0a;&#x0a;&#x0a;" Importance="high" />
+
+    
+
+    <Message Text="-------- Gathering System.Security.Permissions 8.0.0 for .NET 8 --------&#x0a;" Importance="high" />
+
+    <Exec Command="dotnet nuget locals global-packages --list" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="NuGetLocation" />
+    </Exec>
+    <PropertyGroup>
+      <NuGetLocationCleaned>$(NuGetLocation.Replace('global-packages: ', ''))</NuGetLocationCleaned>
+      <PermissionsPath>$(NuGetLocationCleaned)system.security.permissions/8.0.0</PermissionsPath>
+      <PermissionsFile>$(PermissionsPath)/system.security.permissions.8.0.0.nupkg</PermissionsFile>
+    </PropertyGroup>
+
+    <Unzip
+      SourceFiles="$(PermissionsFile)"
+      DestinationFolder="./Work" />
+    <Copy SourceFiles="./Work/lib/net8.0/System.Security.Permissions.dll" DestinationFolder="./extralibs" />
+
+    <RemoveDir Directories="./Work" />
+
+    <Message Text="&#x0a;-------- Got System.Security.Permissions from $(PermissionsFile) --------&#x0a;&#x0a;&#x0a;" Importance="high" />
+
+
+
+    <Message Text="-------- Cumulo pre-build steps complete! --------&#x0a;" Importance="high" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+
+    <ItemGroup>
+      <ExtraLibs Include="./extralibs/**" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ExtraLibs)" DestinationFolder="$(PublishDir)extralibs/%(RecursiveDir)" />
+    <Copy SourceFiles="./specials/0Harmony.dll" DestinationFolder="$(PublishDir)/specials" />
+
+    <Copy SourceFiles="@(ExtraLibs)" DestinationFolder="$(OutDir)extralibs/%(RecursiveDir)" />
+    <Copy SourceFiles="./specials/0Harmony.dll" DestinationFolder="$(OutDir)/specials" />
+  </Target>
+
+
+  <Target Name="DeepClean">
+    <RemoveDir Directories="./bin" />
+    <RemoveDir Directories="./obj" />
+
+    <ItemGroup>
+      <FilesToDelete Include="./extralibs/**/*.dll;./specials/**/*" />
+    </ItemGroup>
+
+    <Delete Files="@(FilesToDelete)" />
+    <Exec Command="dotnet restore" />
+  </Target>
+
+</Project>
