@@ -138,14 +138,5 @@
             <param name="processor"></param>
             <returns></returns>
         </member>
-        <member name="M:Cumulonimbus.Program.Abort_Patch(System.Collections.Generic.IEnumerable{Mono.Cecil.Cil.Instruction},Mono.Cecil.ModuleDefinition,Mono.Cecil.Cil.ILProcessor)">
-            <summary>
-            Patches the 'Abort' method on the threadworker to call Thread.Interrupt instead, as Thread.Abort is deprecated
-            </summary>
-            <param name="instructions"></param>
-            <param name="module"></param>
-            <param name="processor"></param>
-            <returns></returns>
-        </member>
     </members>
 </doc>
