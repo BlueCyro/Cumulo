@@ -14,7 +14,11 @@ public class Program
 {
     public const string EXTRA_LIBS = "./extralibs";
     public const string SPECIAL_LIBS = "./specials";
-    public static readonly string[] targetModules = ["FrooxEngine.dll", "FrooxEngine.Weaver.dll", "Elements.Core.dll"];
+
+    // For some reason, the order of this matters. The process of reading and resolving assemblies appears to
+    // access other assemblies in the folder in such a way that prevents opening them with even the most permissive
+    // of file sharing flags. I spent almost 12 hours trying to figure this out. I give up.
+    public static readonly string[] targetModules = ["FrooxEngine.dll", "FrooxEngine.Weaver.dll"];
 
 #pragma warning restore CS1591
 
@@ -23,7 +27,7 @@ public class Program
     /// </summary>
     /// <param name="args">Command line arguments</param>
     /// <returns></returns>
-    public static async Task<int> Main(string[] args)
+    public static int Main(string[] args)
     {
         // Define root command
         RootCommand root = new("Patches the Resonite headless to be compatible with the .NET 8 Runtime");
@@ -33,14 +37,17 @@ public class Program
             "path",
             "The path of the Resonite Headless directory");
         
+
         // Add a bool option to allow running without user input
         Option<bool> noConfirm = new(
             "--noconfirm",
             () => false,
             "Runs Cumulo without asking for user confirmation (useful in headless startup scripts)");
 
+
         root.AddArgument(path);
         root.AddOption(noConfirm);
+
 
         // Define a handler for running the command line input
         root.SetHandler((path, noConfirm) => {            
@@ -54,7 +61,8 @@ public class Program
 
         }, path, noConfirm);
 
-        return await root.InvokeAsync(args);
+
+        return root.Invoke(args);
     }
 
 
@@ -68,12 +76,14 @@ public class Program
     {   
         Msg("Starting Cumulo patcher!");
 
+
         // If the extra libraries somehow don't exist, blow up
         if (!Directory.Exists(EXTRA_LIBS) || !File.Exists(Path.Combine(SPECIAL_LIBS, "0Harmony.dll")))
         {
             Error("Cannot find extra libraries! Exiting!");
             return;
         }
+
 
         // Make super duper sure that the user wants to irreversibly modify their headless
         if (!noConfirm)
@@ -111,7 +121,7 @@ public class Program
         // Read all of the targetModules from the headless directory and apply patches
         IEnumerable<FileStream> files =
             targetModules.Select(m => 
-                File.Open(Path.Combine(path, m), FileMode.Open, FileAccess.ReadWrite));
+                File.Open(Path.Combine(path, m), FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite));
         
 
         // Make a new resolver, the  Nimbus resolver notably doesn't cache resolved assemblies
@@ -133,11 +143,13 @@ public class Program
             try
             {
                 using AssemblyDefinition asm = AssemblyDefinition.ReadAssembly(module, readParams);
-                PatchHelpers.PatchAll(asm.MainModule);
+                int patched = PatchHelpers.PatchAll(asm.MainModule);
 
-
-                Msg($"Writing assembly to: {module.Name}");
-                asm.Write(module);
+                if (patched > 0)
+                {
+                    Msg($"Writing assembly to: {module.Name}");
+                    asm.Write(module);
+                }
             }
             catch (IOException ex) // Catch any potential violations. I caught a lot of these so I'm leaving this here to be sure :(
             {
@@ -185,6 +197,7 @@ public class Program
         Msg("Press any key to continue");
         Console.ReadKey();
     }
+
 
 
     /// <summary>
@@ -291,17 +304,21 @@ public class Program
         // Make a new lambda definition (final result: string => string.ToLower())
         var lambda = new MethodDefinition("StringLambda", MethodAttributes.Public | MethodAttributes.Static, module.TypeSystem.String);
         
+        
         // Add a string input parameter to the method
         var param = new ParameterDefinition("stringInput", ParameterAttributes.None, module.TypeSystem.String);
         
+
         // Add the parameter to the method definition
         lambda.Parameters.Add(param);
+
 
         // Emit the function body
         var lambdaProcessor = lambda.Body.GetILProcessor();
         lambdaProcessor.Emit(OpCodes.Ldarg_0);
         lambdaProcessor.Emit(OpCodes.Callvirt, module.ImportReference(typeof(string).GetMethod("ToLower", [])));
         lambdaProcessor.Emit(OpCodes.Ret);
+
 
         // Add the lambda into the module
         processor.Body.Method.DeclaringType.Methods.Add(lambda);
@@ -338,35 +355,12 @@ public class Program
             processor.Create(OpCodes.Ret)
         ];
 
+
         // Insert returnCheck at the beginning of the function
         foreach (Instruction inst in returnCheck)
             processor.InsertBefore(breakTarget, inst);
         
         
         return instructions;
-    }
-
-
-
-    /// <summary>
-    /// Patches the 'Abort' method on the threadworker to call Thread.Interrupt instead, as Thread.Abort is deprecated
-    /// </summary>
-    /// <param name="instructions"></param>
-    /// <returns></returns>
-    [MethodPatch("Elements.Core.WorkProcessor+ThreadWorker", "Abort")]
-    public static IEnumerable<Instruction> Abort_Patch(IEnumerable<Instruction> instructions)
-    {
-        foreach (var inst in instructions)
-        {
-            if (inst.OpCode == OpCodes.Call)
-            {
-                Msg($"{inst.Operand}");
-                yield return inst;
-            }
-            else
-            {
-                yield return inst;
-            }
-        }
     }
 }
