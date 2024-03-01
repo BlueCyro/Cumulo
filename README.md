@@ -33,3 +33,12 @@ The changes made are:
 You may also pass `--noconfirm` as an optional flag to run Cumulo without user confirmation. **Cumulo will not prompt you before making changes when using this flag**.
 
 E.g. `mono Cumulo.exe /headless/path/here --noconfirm`
+
+# How do I run with .NET 8?
+Simply replace your startup command with `dotnet Resonite.exe -YourExistingLaunchFlagsHere -Etc.`
+
+E.g. if you're running linux and using mono to run the headless, the command goes from:
+- `mono Resonite.exe`
+
+to
+- `dotnet Resonite.exe`
