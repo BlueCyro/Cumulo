@@ -46,3 +46,9 @@ E.g. if you're running linux and using mono to run the headless, the command goe
 
 to
 - `dotnet Resonite.exe`
+
+<br/><br/>
+<br/><br/>
+
+<div style="text-align: right">Small shoutout to <a href="https://github.com/Nihlus/Crystite">Crystite</a> for inspiring implementations for some of the trickier hoops I had to jump through.</div>
+
