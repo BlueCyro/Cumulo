@@ -6,6 +6,10 @@ A simple patcher that uses Mono.Cecil to weave the Resonite Headless for use in 
 - Bundled with [Nimbus](https://github.com/RileyGuy/Nimbus) to provide auxiliary patches in order to properly function
 - Bundled with [Harmony](https://github.com/pardeike/Harmony) built for .NET 8 to support [ResoniteModLoader](https://github.com/resonite-modding-group/ResoniteModLoader) mods
 
+# Requirements
+- Access to the Resonite Headless server (this repo ain't a bargain bin)
+- ResoniteModLoader version 2.6.0 or greater
+
 # Command Line Usage
 Cumulo is run from the command line/terminal and can either be run standalone or as part of a script - such as your own server startup script for example.
 
