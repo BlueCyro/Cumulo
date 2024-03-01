@@ -113,6 +113,7 @@
     </ItemGroup>
 
     <Delete Files="@(FilesToDelete)" />
+    <Delete Files="./Cumulo_Patcher.zip" />
     <Exec Command="dotnet restore" />
   </Target>
 
