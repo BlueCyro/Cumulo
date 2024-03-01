@@ -10,7 +10,7 @@
     <Version>1.0.0</Version>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Authors>Cyro</Authors>
-    <Product>Cumu .NET 8 Assembly Weaver for Resonite Headless</Product>
+    <Product>Cumulo .NET 8 Assembly Weaver for Resonite Headless</Product>
     <Description>Adds patches to the Resonite Headless to enable greater compatibility with .NET 8</Description>
     <Copyright>Copyright (c) 2023 Riley Fields</Copyright>
 
