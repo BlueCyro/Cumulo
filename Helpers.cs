@@ -112,11 +112,14 @@ public static class PatchHelpers
 
 
 
+
+#pragma warning disable CS0419 // Ambiguous reference in cref attribute
     /// <summary>
     /// Patches a <see cref="MethodDefinition"/> by invoking a patch method
     /// </summary>
     /// <param name="definition">Definition to patch</param>
     /// <param name="patch">The <see cref="MethodInfo"/> to invoke for patching the definition</param>
+#pragma warning restore CS0419 // Ambiguous reference in cref attribute
     private static void PatchMethod(this MethodDefinition definition, MethodInfo patch)
     {
         Program.Msg($"Patching {definition.FullName} with {patch.Name}!\n");
