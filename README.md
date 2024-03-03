@@ -38,6 +38,8 @@ You may also pass `--noconfirm` as an optional flag to run Cumulo without user c
 
 E.g. `mono Cumulo.exe /headless/path/here --noconfirm`
 
+You may also opt to skip downloading the Nimbus companion mod by specifying `--nonimbus` as a command line flag.
+
 # How do I run with .NET 8?
 Simply replace your startup command with `dotnet Resonite.exe -YourExistingLaunchFlagsHere -Etc.`
 
