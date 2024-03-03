@@ -89,12 +89,13 @@
             <param name="args">Command line arguments</param>
             <returns></returns>
         </member>
-        <member name="M:Cumulonimbus.Program.Execute(System.String,System.Boolean)">
+        <member name="M:Cumulonimbus.Program.Execute(System.String,System.Boolean,System.Boolean)">
             <summary>
             Executes the patcher and re-weaves the targetted assemblies
             </summary>
             <param name="path">The path of the Resonite Headless folder</param>
             <param name="noConfirm">Whether to run without user input</param>
+            <param name="noNimbus">Whether to skip downloading Nimbus</param>
         </member>
         <member name="M:Cumulonimbus.Program.Msg(System.String)">
             <summary>

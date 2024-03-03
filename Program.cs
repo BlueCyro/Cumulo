@@ -54,6 +54,7 @@ public class Program
 
         root.AddArgument(path);
         root.AddOption(noConfirm);
+        root.AddOption(noNimbus);
 
 
         // Define a handler for running the command line input

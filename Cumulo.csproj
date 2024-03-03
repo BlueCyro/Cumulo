@@ -91,6 +91,8 @@
 
 
   <Target Name="ZipRelease" AfterTargets="Publish">
+    <Copy SourceFiles="@(ExtraLibs)" DestinationFolder="$(PublishDir)extralibs/%(RecursiveDir)" />
+    <Copy SourceFiles="./specials/0Harmony.dll" DestinationFolder="$(PublishDir)/specials" />
     <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="./Cumulo_Patcher.zip" Overwrite="true" />
   </Target>
 
@@ -105,12 +107,6 @@
     <Copy SourceFiles="@(ExtraLibs)" DestinationFolder="$(OutDir)extralibs/%(RecursiveDir)" />
     <Copy SourceFiles="$(Specials)0Harmony.dll" DestinationFolder="$(OutDir)/specials" />
   </Target>
-
-  <Target Name="CopyToPublish" AfterTargets="Publish">
-    <Copy SourceFiles="@(ExtraLibs)" DestinationFolder="$(PublishDir)extralibs/%(RecursiveDir)" />
-    <Copy SourceFiles="./specials/0Harmony.dll" DestinationFolder="$(PublishDir)/specials" />
-  </Target>
-
 
 
   <Target Name="DeepClean">
