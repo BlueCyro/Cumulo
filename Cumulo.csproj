@@ -40,6 +40,8 @@
     </PackageReference>
     <PackageReference Include="Mono.Cecil" Version="0.11.5" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
@@ -54,11 +56,7 @@
     <Message Text="-------- Building 0Harmony for .NET 8 --------&#xA;" Importance="high" />
 
     <Exec Command="git clone https://github.com/pardeike/Harmony $(HarmonyRoot)" Condition="!Exists($(HarmonyRoot))" />
-    <XmlPoke
-      XmlInputPath="$(HarmonyRoot)ILRepack.targets"
-      Query="/msb:Project/msb:Target/msb:ILRepack/@Internalize"
-      Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003' /&gt;"
-      Value="false" />
+    <XmlPoke XmlInputPath="$(HarmonyRoot)ILRepack.targets" Query="/msb:Project/msb:Target/msb:ILRepack/@Internalize" Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003' /&gt;" Value="false" />
     <!--Whoever made XML must be punished for these (&lt; = < &gt; = >) stupid escaped HTML tags-->
     <Exec Command="dotnet publish $(HarmonyPath)Harmony.csproj -c ReleaseFat --framework net8.0" />
     <Copy SourceFiles="$(HarmonyPath)bin/ReleaseFat/net8.0/0Harmony.dll" DestinationFolder="$(Specials)" /> 
@@ -67,21 +65,31 @@
 
 
 
-    <Message Text="-------- Gathering System.Security.Permissions 8.0.0 for .NET 8 --------&#xA;" Importance="high" />
+    <Message Text="-------- Gathering miscellaneous system libraries for .NET 8 --------&#xA;" Importance="high" />
 
     <Exec Command="dotnet nuget locals global-packages --list" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="NuGetLocation" />
     </Exec>
     <PropertyGroup>
       <NuGetLocationCleaned>$(NuGetLocation.Replace('global-packages: ', ''))</NuGetLocationCleaned>
-      <PermissionsPath>$(NuGetLocationCleaned)system.security.permissions/8.0.0/</PermissionsPath>
-      <PermissionsFile>$(PermissionsPath)system.security.permissions.8.0.0.nupkg</PermissionsFile>
+      <PermissionsFile>$(NuGetLocationCleaned)system.security.permissions/8.0.0/system.security.permissions.8.0.0.nupkg</PermissionsFile>
+      <ManagementFile>$(NuGetLocationCleaned)system.management/8.0.0/system.management.8.0.0.nupkg</ManagementFile>
+      <PerfCounterFile>$(NuGetLocationCleaned)system.diagnostics.performancecounter/8.0.0/system.diagnostics.performancecounter.8.0.0.nupkg</PerfCounterFile>
+
     </PropertyGroup>
     <Unzip SourceFiles="$(PermissionsFile)" DestinationFolder="$(WorkDir)" />
     <Copy SourceFiles="$(WorkDir)lib/net8.0/System.Security.Permissions.dll" DestinationFolder="./extralibs" />
     <RemoveDir Directories="$(WorkDir)" />
 
-    <Message Text="&#xA;-------- Got System.Security.Permissions from $(PermissionsFile) --------&#xA;&#xA;&#xA;" Importance="high" />
+    <Unzip SourceFiles="$(ManagementFile)" DestinationFolder="$(WorkDir)" />
+    <Copy SourceFiles="$(WorkDir)runtimes/win/lib/net8.0/System.Management.dll" DestinationFolder="./extralibs" />
+    <RemoveDir Directories="$(WorkDir)" />
+
+    <Unzip SourceFiles="$(PerfCounterFile)" DestinationFolder="$(WorkDir)" />
+    <Copy SourceFiles="$(WorkDir)runtimes/win/lib/net8.0/System.Diagnostics.PerformanceCounter.dll" DestinationFolder="./extralibs" />
+    <RemoveDir Directories="$(WorkDir)" />
+
+    <Message Text="&#xA;-------- Got miscellaneous libraries --------&#xA;&#xA;&#xA;" Importance="high" />
 
 
 

@@ -127,12 +127,14 @@ public class Program
         }
     
         
-        string nimbusPath = Path.Combine(EXTRA_LIBS, "rml_mods", "Nimbus.dll");
+        string nimbusDir = Path.Combine(EXTRA_LIBS, "rml_mods");
+        string nimbusPath = Path.Combine(nimbusDir, "Nimbus.dll");
 
-        if (File.Exists(nimbusPath))
-            File.Delete(nimbusPath);
+        if (Directory.Exists(nimbusDir)) // Refresh nimbus directory
+            Directory.Delete(nimbusDir, true);
 
-    
+        Directory.CreateDirectory(nimbusDir);
+        
         if (!noNimbus)
         {
             // Download the latest release of Nimbus
@@ -145,7 +147,7 @@ public class Program
             }
             catch (WebException ex)
             {
-                Error($"Error when downloading file: {ex.Message}");
+                Error($"Error when downloading file: {ex}");
             }
         }
 
