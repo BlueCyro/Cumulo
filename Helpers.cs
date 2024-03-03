@@ -179,6 +179,7 @@ public static class PatchHelpers
         // Get the files in the source directory and copy to the destination directory
         foreach (FileInfo file in dir.GetFiles())
         {
+            Program.Msg($"Copying {file.Name} to {Path.Combine(destinationDir, file.Name)}");
             string targetFilePath = Path.Combine(destinationDir, file.Name);
             file.CopyTo(targetFilePath, overWrite);
         }

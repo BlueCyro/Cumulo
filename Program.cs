@@ -45,21 +45,28 @@ public class Program
             "Runs Cumulo without asking for user confirmation (useful in headless startup scripts)");
 
 
+        // Add a bool option to not download Nimbus automatically
+        Option<bool> noNimbus  = new(
+            "--nonimbus",
+            () => false,
+            "Continues without automatically installing Nimbus");
+
+
         root.AddArgument(path);
         root.AddOption(noConfirm);
 
 
         // Define a handler for running the command line input
-        root.SetHandler((path, noConfirm) => {            
+        root.SetHandler((path, noConfirm, noNimbus) => {            
             if (!Directory.Exists(path))
             {
                 Console.WriteLine("Cannot find directory, check the path for errors and try again");
                 return;
             }
 
-            Execute(path, noConfirm);
+            Execute(path, noConfirm, noNimbus);
 
-        }, path, noConfirm);
+        }, path, noConfirm, noNimbus);
 
 
         return root.Invoke(args);
@@ -72,7 +79,8 @@ public class Program
     /// </summary>
     /// <param name="path">The path of the Resonite Headless folder</param>
     /// <param name="noConfirm">Whether to run without user input</param>
-    public static void Execute(string path, bool noConfirm)
+    /// <param name="noNimbus">Whether to skip downloading Nimbus</param>
+    public static void Execute(string path, bool noConfirm, bool noNimbus)
     {   
         Msg("Starting Cumulo patcher!");
 
@@ -117,6 +125,29 @@ public class Program
             }
         }
     
+        
+        string nimbusPath = Path.Combine(EXTRA_LIBS, "rml_mods", "Nimbus.dll");
+
+        if (File.Exists(nimbusPath))
+            File.Delete(nimbusPath);
+
+    
+        if (!noNimbus)
+        {
+            // Download the latest release of Nimbus
+            Msg("Downloading the latest release of Nimbus...");
+            using WebClient wc = new();
+            try
+            {
+                wc.DownloadFile("https://github.com/RileyGuy/Nimbus/releases/latest/download/Nimbus.dll", nimbusPath);
+                Msg("Complete!");
+            }
+            catch (WebException ex)
+            {
+                Error($"Error when downloading file: {ex.Message}");
+            }
+        }
+
 
         // Read all of the targetModules from the headless directory and apply patches
         IEnumerable<FileStream> files =
@@ -124,17 +155,14 @@ public class Program
                 File.Open(Path.Combine(path, m), FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite));
         
 
-        // Make a new resolver, the  Nimbus resolver notably doesn't cache resolved assemblies
+        // Make a new Nimbus resolver and add the Headless as another path to look for assemblies in
         NimbusAssemblyResolver resolver = new();
-        ReaderParameters readParams = new()
+        resolver.AddSearchDirectory(path);
+        ReaderParameters readParams = new() // Allow read/write
         {
             ReadWrite = true,
             AssemblyResolver = resolver
         };
-
-
-        // Also search in the headless path for assemblie references to resolve
-        resolver.AddSearchDirectory(path);
 
 
         // Go over each module and patch it in sequence
@@ -167,26 +195,23 @@ public class Program
         Msg("Merging extralibs into Headless folder");
         PatchHelpers.CopyDirectory("./extralibs", path, true, true);
 
+        // Harmony dll for .NET 8
+        string harmonySource = Path.Combine(SPECIAL_LIBS, "0Harmony.dll");
 
-        // Specifically try to find 0Harmony so we can replace the old one
-        string OldHarmony = Directory.EnumerateFiles(path, "0Harmony.dll", SearchOption.AllDirectories).FirstOrDefault();
-
-
-        // If no existing 0Harmony was found, just drop it in Libraries
-        string HarmonyPath =
-            OldHarmony != null
-            ? Path.GetDirectoryName(OldHarmony)
-            : Path.Combine(path, "Libraries/");
+        // Specifically try to find 0Harmony to replace the old one, otherwise just drop into Libraries
+        string harmonyFile =
+            Directory.EnumerateFiles(path, "0Harmony.dll", SearchOption.AllDirectories).FirstOrDefault() ??
+            Path.Combine(path, "Libraries", "0Harmony.dll");
         
+        string harmonyPath = Path.GetDirectoryName(harmonyFile);
 
-        // Create the directory (only for Libraries/) if it doesn't exist
-        if (!Directory.Exists(HarmonyPath))
-            Directory.CreateDirectory(HarmonyPath);
+
+        Msg($"Copying 0Harmony to {harmonyFile}");
+        if (!Directory.Exists(harmonyPath))
+            Directory.CreateDirectory(harmonyPath);
         
-
         // Copy 0Harmony.dll to the destination
-        File.Copy(Path.Combine(SPECIAL_LIBS, "0Harmony.dll"), HarmonyPath, true);
-
+        File.Copy(harmonySource, harmonyFile, true);
 
         // Success! :D (Mono.Cecil has stripped away a part of me that I'll never get back, but in return, I now wield eldritch power... Was it worth it...?)
         Msg("Success!");
